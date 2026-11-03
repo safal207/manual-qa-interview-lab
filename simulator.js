@@ -288,7 +288,7 @@
     const controls=document.getElementById('controls');
     if(controls)controls.classList.toggle('hidden',simulator || state.mode==='progress');
     const home=document.getElementById('learningHome');
-    if(home){home.classList.toggle('sim-home-hidden',simulator);const side=home.querySelector('.learning-side');if(side){side.insertAdjacentHTML('beforeend','<div class="sim-home-cta"><span>Практика как на работе</span><p>Четыре расследования с решениями и защитой перед техлидом.</p><button class="btn ghost" id="simOpen">QA Simulator →</button></div>');document.getElementById('simOpen').onclick=()=>{state.mode='simulator';store().active=null;render();};}}
+    if(home){home.classList.toggle('sim-home-hidden',simulator);const side=home.querySelector('.learning-side');if(side){side.insertAdjacentHTML('beforeend','<div class="sim-home-cta"><span>Практика как на работе</span><p>Четыре расследования с решениями и защитой перед техлидом.</p><button class="btn ghost" id="simOpen">QA Simulator →</button></div>');document.getElementById('simOpen').onclick=()=>{state.mode='simulator';render();};}}
     if(simulator)renderSim();
   };
   store();
