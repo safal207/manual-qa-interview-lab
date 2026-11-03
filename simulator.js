@@ -291,6 +291,12 @@
     const home=document.getElementById('learningHome');
     if(home){home.classList.toggle('sim-home-hidden',simulator);const side=home.querySelector('.learning-side');if(side){side.insertAdjacentHTML('beforeend','<div class="sim-home-cta"><span>Практика как на работе</span><p>Четыре расследования с решениями и защитой перед техлидом.</p><button class="btn ghost" id="simOpen">QA Simulator →</button></div>');document.getElementById('simOpen').onclick=()=>{browsing=false;state.mode='simulator';render();};}}
     if(simulator)renderSim();
+    if(state.mode==='progress'){
+      const done=store().history, count=CASES.filter(c=>done[c.id]).length;
+      const w=document.getElementById('workspace');
+      w.insertAdjacentHTML('beforeend','<section class="sim-coach" aria-label="Прогресс расследований"><div class="sim-kicker">QA Simulator</div><h3>Расследования: '+count+' из '+CASES.length+'</h3><p class="sim-muted">Результаты выбора действий сохраняются отдельно от самооценки свободного ответа. Пройди разные сценарии и возвращайся к неуверенным решениям.</p><div class="sim-cta"><button class="btn primary" id="simPracticeProgress">Открыть QA Simulator →</button></div></section>');
+      document.getElementById('simPracticeProgress').onclick=()=>{browsing=true;state.mode='simulator';render();};
+    }
   };
   store();
   render();
