@@ -29,7 +29,7 @@
     auth: {
       opening:'На Android PWA после logout иногда возникает oauth_state_mismatch. В Chrome-вкладке проблема не воспроизводится. Как локализуешь её без раскрытия токенов?',
       topics:[
-        {id:'state',label:'state / callback',pattern:/oauth|state|callback|redirect|редирект|pkce|code.?verifier/iu,
+        {id:'state',label:'state / callback',pattern:/state|callback|redirect|редирект|pkce|code.?verifier/iu,
           question:'Ты упомянул OAuth state или callback. Как проверишь связь state до редиректа и после возвращения в PWA, не записывая секретные значения в баг-репорт?'},
         {id:'cookies',label:'cookie / storage',pattern:/cook|кук|samesite|secure|httponly|storage|localstorage|sessionstorage|сессионн/iu,
           question:'Ты предложил проверить cookie или storage. Какие параметры и области видимости сравнишь у PWA и обычной вкладки, особенно после logout?'},
