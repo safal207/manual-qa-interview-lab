@@ -93,3 +93,6 @@
 @media(max-width:700px){.sim-list{grid-template-columns:1fr}.sim-intro{padding:17px}.sim-intro-label{min-width:68px}.sim-dimensions{grid-template-columns:1fr}.sim-route-arrow{display:none}.sim-route-item{font-size:10px;padding:7px}.sim-card{min-height:180px}.sim-frame>h2{font-size:23px}}
 @media(max-width:460px){.sim-intro{align-items:flex-start;flex-direction:column}.sim-intro-label{width:100%;box-sizing:border-box;flex-direction:row;justify-content:space-between}.sim-score{flex-direction:column;align-items:flex-start;gap:2px}.sim-score strong{font-size:38px}.sim-card-foot{flex-wrap:wrap}.sim-card-foot button{width:100%}.sim-heading{flex-direction:column;align-items:flex-start}.sim-next .btn{width:100%}}
 @media(prefers-reduced-motion:reduce){.sim-track>div,.sim-option{transition:none}}
+
+.sim-card-talk{width:100%;margin-top:10px;border-color:#405d68;color:#bfe5e9;font-size:12px;min-height:40px}
+.sim-card-talk:hover{border-color:#b6ed89;color:#eaffd8}
