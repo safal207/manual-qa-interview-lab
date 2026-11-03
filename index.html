@@ -10,6 +10,7 @@
 </style>
 <link rel="stylesheet" href="learning.css">
 <link rel="stylesheet" href="simulator.css">
+<link rel="stylesheet" href="coach.css">
 </head>
 <body>
 <div class="app">
@@ -23,7 +24,7 @@
   <div class="hero"><div><div class="eyebrow">Практический тренажёр</div><h1>Не учи ответы.<br>Учись рассуждать.</h1><p>Теория, настоящие QA-ситуации, тесты и симуляция собеседования. Фокус на ручном тестировании, API, SQL, клиент-сервере и продуктовых рисках.</p></div><span class="hero-pill" id="bankCount">Загрузка…</span></div>
   <section id="learningHome" class="learning-home" aria-label="Тренировка дня"></section>
   <section class="stats" id="stats" aria-label="Статистика подготовки"></section>
-  <nav class="tabs" aria-label="Режимы тренировки"><button class="tab" data-mode="daily">00 · Мини-урок</button><button class="tab active" data-mode="cards">01 · Карточки</button><button class="tab" data-mode="test">02 · Тест</button><button class="tab" data-mode="interview">03 · Собеседование</button><button class="tab" data-mode="simulator">04 · QA Simulator</button><button class="tab" data-mode="progress">05 · Прогресс</button></nav>
+  <nav class="tabs" aria-label="Режимы тренировки"><button class="tab" data-mode="daily">00 · Мини-урок</button><button class="tab active" data-mode="cards">01 · Карточки</button><button class="tab" data-mode="test">02 · Тест</button><button class="tab" data-mode="interview">03 · Собеседование</button><button class="tab" data-mode="simulator">04 · QA Simulator</button><button class="tab" data-mode="coach">05 · Техлид</button><button class="tab" data-mode="progress">06 · Прогресс</button></nav>
   <div class="controls" id="controls"><div class="selectgroup"><select id="focusSelect" aria-label="Выбрать раздел"></select><select id="difficulty" aria-label="Сложность"><option value="all">Любой уровень</option><option value="Junior">Junior</option><option value="Middle">Middle</option><option value="Senior">Senior</option></select><label class="switch" id="weakLabel"><input type="checkbox" id="weakOnly"> Повторить слабые</label></div><input class="search" id="search" type="search" placeholder="Поиск по вопросам…" aria-label="Поиск вопросов"></div>
   <section id="workspace" class="workspace" aria-live="polite"></section>
   <footer class="footer"><span>Ответы оцениваются вручную по критериям, без фиктивного AI-скоринга.</span><span>Офлайн · Без регистрации · Локальный прогресс</span></footer>
@@ -201,5 +202,6 @@ setup();
 </script>
 <script src="learning.js"></script>
 <script src="simulator.js"></script>
+<script src="coach.js"></script>
 </body>
 </html>
