@@ -86,6 +86,7 @@
   };
 
   const MAX_LENGTH=1800;
+  let browsing=false;
   const clean = value => String(value||'').replace(/\r\n?/g,'\n').trim().slice(0,MAX_LENGTH);
   const escape = value => esc(String(value));
   const now = () => new Date().toISOString();
@@ -110,7 +111,7 @@
   function start(id) {
     if(!profile(id))return false;
     storage().active=initial(id);
-    save();
+    browsing=false;save();
     state.mode='coach';
     render();
     return true;
@@ -167,7 +168,7 @@
     storage().history=storage().history.slice(0,10);
     save();render();return true;
   }
-  function resume(){const a=storage().active;if(!a)return false;state.mode='coach';render();return true;}
+  function resume(){const a=storage().active;if(!a)return false;browsing=false;state.mode='coach';render();return true;}
   function discard() {
     // Only the active draft is discarded; completed local practice is retained.
     storage().active=null;save();render();
@@ -197,7 +198,7 @@
     a.messages.filter(m=>m.role==='candidate').forEach(m=>detect(a.caseId,m.text).forEach(x=>tags.add(x)));
     return p.topics.map(x=>({id:x.id,label:x.label,mentioned:tags.has(x.id)}));
   }
-  function jumpCatalog() {storage().active=null;save();state.mode='coach';render();}
+  function jumpCatalog() {browsing=true;state.mode='coach';render();}
   const steps = a => '<div class="tl-steps" aria-label="Ход собеседования">' +
     [1,2,3,4].map(i=>'<span class="'+(a.turns>=i?'done':a.turns===i-1?'current':'')+'">'+i+'</span>').join('')+'</div>';
   function cards() {
@@ -242,7 +243,7 @@
     if(state.mode!=='coach')return;
     const a=storage().active;
     const w=document.getElementById('workspace');
-    w.innerHTML=!a?cards():a.phase==='chat'?chat(a):a.phase==='review'?review(a):done(a);
+    w.innerHTML=(!a||browsing)?cards():a.phase==='chat'?chat(a):a.phase==='review'?review(a):done(a);
     w.querySelectorAll('[data-tl-start]').forEach(b=>b.onclick=()=>{if(a&&a.phase==='chat'&&!window.confirm('Начать новый диалог? Текущий незавершённый разговор будет заменён.'))return;start(b.dataset.tlStart);});
     const resumeBtn=document.getElementById('tlResume');
     if(resumeBtn)resumeBtn.onclick=resume;
