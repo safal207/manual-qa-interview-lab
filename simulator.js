@@ -232,7 +232,7 @@
     const active=store().active;
     return '<div class="sim-intro"><div><div class="sim-kicker">Тренажёр расследований</div><h2>Думай как QA, а не угадывай ответ</h2><p>Выбирай действия, собирай доказательства и защищай release-решение. Каждый сценарий — 3 решения и короткая защита. Никаких случайных баллов или бесконечной ленты.</p></div><div class="sim-intro-label"><strong>'+Object.keys(h).length+' / '+CASES.length+'</strong><span>пройдено</span></div></div>'+
       (active&&active.phase!=='done'?'<div class="sim-resume"><div><strong>Незавершённое расследование</strong><p>'+escape(getCase(active.id)?.title||'')+' · шаг '+(active.phase==='defense'?4:active.step+1)+' из 4</p></div><button class="btn primary" id="simResume">Продолжить →</button></div>':'')+
-      '<div class="sim-list">'+CASES.map(c=>{const x=h[c.id];return '<article class="sim-card"><div class="sim-case-meta"><span class="sim-num">'+c.icon+'</span><span>'+escape(c.level)+'</span><span>'+escape(c.minutes)+'</span></div><h3>'+escape(c.title)+'</h3><p>'+escape(c.teaser)+'</p><div class="sim-subject">'+escape(c.domain)+'</div><div class="sim-card-foot"><span>'+(x?'Пройдено · '+x.percent+'% по решениям':'Не начато')+'</span><button class="btn '+(x?'ghost':'primary')+'" data-sim-launch="'+escape(c.id)+'">'+(x?'Ещё попытка ↻':'Начать →')+'</button></div></article>'}).join('')+'</div>'+
+      '<div class="sim-list">'+CASES.map(c=>{const x=h[c.id];return '<article class="sim-card"><div class="sim-case-meta"><span class="sim-num">'+c.icon+'</span><span>'+escape(c.level)+'</span><span>'+escape(c.minutes)+'</span></div><h3>'+escape(c.title)+'</h3><p>'+escape(c.teaser)+'</p><div class="sim-subject">'+escape(c.domain)+'</div><div class="sim-card-foot"><span>'+(x?'Пройдено · '+x.percent+'% по решениям':'Не начато')+'</span><button class="btn '+(x?'ghost':'primary')+'" data-sim-launch="'+escape(c.id)+'">'+(x?'Ещё попытка ↻':'Начать →')+'</button></div><button class="btn ghost sim-card-talk" data-sim-coach="'+escape(c.id)+'">Диалог с техлидом →</button></article>'}).join('')+'</div>'+
       '<p class="sim-caption">Проценты отражают только выбор действий по заранее заданным критериям. Свободный ответ оцениваешь самостоятельно; это не экзаменационная аттестация.</p>';
   }
   function play(c,a) {
@@ -272,6 +272,7 @@
     const c=a&&getCase(a.id);
     w.innerHTML=(!c||browsing)?catalog():a.phase==='play'?play(c,a):a.phase==='defense'?defense(c,a):debrief(c,a);
     w.querySelectorAll('[data-sim-launch]').forEach(el=>el.onclick=()=>launch(el.dataset.simLaunch));
+    w.querySelectorAll('[data-sim-coach]').forEach(el=>el.onclick=()=>{if(window.QATechLead)window.QATechLead.start(el.dataset.simCoach);});
     if(document.getElementById('simResume'))document.getElementById('simResume').onclick=()=>{browsing=false;state.mode='simulator';render();};
     if(document.getElementById('simBack'))document.getElementById('simBack').onclick=()=>{browsing=true;render();};
     w.querySelectorAll('[data-sim-option]').forEach(el=>el.onclick=()=>choose(Number(el.dataset.simOption)));
