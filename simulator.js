@@ -166,6 +166,7 @@
     }
   ];
   const DIMENSIONS=['Доказательства','Безопасность','Коммуникация'];
+  let browsing=false;
   const MAX_DIM=CASES[0].phases.length*2;
   function store() {
     if (!saved.simulator || typeof saved.simulator !== 'object') saved.simulator={history:{},active:null};
@@ -192,7 +193,7 @@
   function launch(id) {
     if(!getCase(id))return;
     setActive({id,step:0,choices:[],phase:'play',defense:'',selfRating:null,rubric:false,startedAt:Date.now()});
-    state.mode='simulator';render();
+    browsing=false;state.mode='simulator';render();
   }
   function choose(index) {
     const a=store().active,c=a&&getCase(a.id);
@@ -269,17 +270,17 @@
     if(state.mode!=='simulator') return;
     const a=store().active;
     const c=a&&getCase(a.id);
-    w.innerHTML=!c?catalog():a.phase==='play'?play(c,a):a.phase==='defense'?defense(c,a):debrief(c,a);
+    w.innerHTML=(!c||browsing)?catalog():a.phase==='play'?play(c,a):a.phase==='defense'?defense(c,a):debrief(c,a);
     w.querySelectorAll('[data-sim-launch]').forEach(el=>el.onclick=()=>launch(el.dataset.simLaunch));
-    if(document.getElementById('simResume'))document.getElementById('simResume').onclick=()=>{state.mode='simulator';render();};
-    if(document.getElementById('simBack'))document.getElementById('simBack').onclick=()=>{store().active=null;save();render();};
+    if(document.getElementById('simResume'))document.getElementById('simResume').onclick=()=>{browsing=false;state.mode='simulator';render();};
+    if(document.getElementById('simBack'))document.getElementById('simBack').onclick=()=>{browsing=true;render();};
     w.querySelectorAll('[data-sim-option]').forEach(el=>el.onclick=()=>choose(Number(el.dataset.simOption)));
     if(document.getElementById('simNext'))document.getElementById('simNext').onclick=advance;
     if(document.getElementById('simDefense'))document.getElementById('simDefense').oninput=e=>setDefense(e.target.value);
     if(document.getElementById('simRubric'))document.getElementById('simRubric').onclick=()=>{store().active.rubric=!store().active.rubric;save();render();};
     w.querySelectorAll('[data-sim-rating]').forEach(el=>el.onclick=()=>finalize(Number(el.dataset.simRating)));
     if(document.getElementById('simRetry'))document.getElementById('simRetry').onclick=()=>launch(c.id);
-    if(document.getElementById('simBack2'))document.getElementById('simBack2').onclick=()=>{store().active=null;save();render();};
+    if(document.getElementById('simBack2'))document.getElementById('simBack2').onclick=()=>{browsing=true;render();};
   }
   const previousRender=render;
   render=function() {
@@ -288,7 +289,7 @@
     const controls=document.getElementById('controls');
     if(controls)controls.classList.toggle('hidden',simulator || state.mode==='progress');
     const home=document.getElementById('learningHome');
-    if(home){home.classList.toggle('sim-home-hidden',simulator);const side=home.querySelector('.learning-side');if(side){side.insertAdjacentHTML('beforeend','<div class="sim-home-cta"><span>Практика как на работе</span><p>Четыре расследования с решениями и защитой перед техлидом.</p><button class="btn ghost" id="simOpen">QA Simulator →</button></div>');document.getElementById('simOpen').onclick=()=>{state.mode='simulator';render();};}}
+    if(home){home.classList.toggle('sim-home-hidden',simulator);const side=home.querySelector('.learning-side');if(side){side.insertAdjacentHTML('beforeend','<div class="sim-home-cta"><span>Практика как на работе</span><p>Четыре расследования с решениями и защитой перед техлидом.</p><button class="btn ghost" id="simOpen">QA Simulator →</button></div>');document.getElementById('simOpen').onclick=()=>{browsing=false;state.mode='simulator';render();};}}
     if(simulator)renderSim();
   };
   store();
