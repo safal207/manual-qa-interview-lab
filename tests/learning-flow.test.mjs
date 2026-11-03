@@ -35,7 +35,7 @@ function boot() {
   const ctx={
     document:{getElementById:get,querySelectorAll:()=>[]},window:{},
     DATA:data,allCards:cards,allQuiz:quizzes,saved,state,
-    esc:x=>String(x),save(){},toast(){},shuffle:a=>[...a],
+    esc:x=>String(x),sectionName:id=>data.find(s=>s.id===id)?.title||'Все разделы',save(){},toast(){},shuffle:a=>[...a],
     render(){},renderCards(){},renderProgress(){},renderTest(){},advanceInterview(){},bindGrade(){}
   };
   runInNewContext(learning,ctx);
