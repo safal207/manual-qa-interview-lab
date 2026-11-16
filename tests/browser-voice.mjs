@@ -215,9 +215,7 @@ try{
   for(const source of ['play','visual','voice','arena'])assert.ok(recorded.some(e=>e.source===source),source+' result missing');
   await page.reload({waitUntil:'domcontentloaded'});
   await page.locator('#startSkillPractice').click();
-  assert.match(await page.locator('#memoryCount').innerText(),new RegExp('Событий: '+recorded.length+'
-}finally{await browser.close()}
-));
+  assert.equal(await page.locator('#memoryCount').innerText(),'Событий: '+recorded.length);
   assert.ok(await page.locator('.memory-map section').count()>0);
   await page.locator('#memoryErase').scrollIntoViewIfNeeded();
   page.once('dialog',d=>d.accept());
