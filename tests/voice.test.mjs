@@ -40,3 +40,9 @@ test('guided speech begins with an example and separates knowledge from listenin
  const match=voice.match(/const speechMore=(\[.*?\])\.map\(/s);assert.ok(match);const rows=JSON.parse(match[1]);assert.equal(rows.length,6);assert.equal(new Set(rows.map(x=>x[1])).size,6);
  assert.match(voice,/training='guided'/);assert.match(voice,/guideStage!==4/);assert.match(voice,/qaSpeechGuideV1/);assert.match(voice,/confidence0/);assert.match(voice,/voiceSystemVoice/);assert.match(voice,/practice,blob:b/);assert.match(html,/href="speech\.css"/);assert.ok(sw.includes("'./speech.css'"));new vm.Script(voice);
 });
+
+test('action lab has 15 original drills grouped by mentor and explicit source labels',()=>{
+ const voice=read('voice.js');const match=voice.match(/const actionMore=(\[.*?\])\.map\(/s);assert.ok(match);const rows=JSON.parse(match[1]);assert.equal(rows.length,15);assert.equal(new Set(rows.map(x=>x[0])).size,15);
+ for(const row of rows){assert.equal(row.length,8);assert.ok(row[6].length>=3);assert.ok(row[7]);}
+ assert.match(voice,/voiceActionPlan/);assert.match(voice,/actionPlan:e.target.value/);assert.match(voice,/concat\(more,englishMore,speechMore,actionMore\)/);
+});
