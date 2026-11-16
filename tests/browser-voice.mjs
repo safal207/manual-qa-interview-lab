@@ -244,4 +244,18 @@ try{
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true);
   assert.deepEqual(errors,[]);
   console.log('PASS: budgeted daily route, exact event completion, offline restore and mobile layout');
+  const strategyRows=await page.evaluate(()=>JSON.parse(localStorage.getItem('qa-route-strategy-v1')||'[]'));
+  assert.equal(strategyRows.length,1);
+  assert.equal(strategyRows[0].source,'play');
+  assert.equal(strategyRows[0].positive,true);
+  await page.reload({waitUntil:'domcontentloaded'});
+  await page.locator('#startRoutePractice').click();
+  assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('qa-route-strategy-v1')||'[]').length),1);
+  await page.locator('#routeClearPolicy').scrollIntoViewIfNeeded();
+  page.once('dialog',d=>d.accept());
+  await page.locator('#routeClearPolicy').click();
+  assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('qa-route-strategy-v1')||'[]').length),0);
+  assert.match(await page.locator('.route-status').innerText(),/2 \/ 5/);
+  assert.deepEqual(errors,[]);
+  console.log('PASS: L7 strategy observation, offline deduplication and independent erase');
 }finally{await browser.close()}
