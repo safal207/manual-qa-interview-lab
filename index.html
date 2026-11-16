@@ -11,6 +11,7 @@
 <link rel="stylesheet" href="learning.css">
 <link rel="stylesheet" href="simulator.css">
 <link rel="stylesheet" href="coach.css">
+<link rel="stylesheet" href="play.css">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#0b101b">
 <style>
@@ -45,7 +46,7 @@ body[data-study-mode="voice"] .workspace{max-width:1000px;margin:auto}.voice-fil
   <div class="hero">
     <div><div class="eyebrow">Твой личный тренажёр Manual QA</div><h1>Знаешь ответ?<br><em>Научись его уверенно объяснять.</em></h1><p>Тренируй речь, разбирай реальные кейсы и готовься к техническому интервью — в своём темпе, по одному вопросу.</p>
       <div class="hero-actions"><button type="button" class="btn primary" id="startVoicePractice">Начать голосовую тренировку →</button><button type="button" class="btn ghost" id="startDailyPractice">Мини-урок · 5–7 мин</button></div>
-      <div class="hero-trust"><span>Без регистрации</span><span>Аудио на устройстве</span><span>Самооценка без AI-скоринга</span></div>
+      <div class="hero-actions" style="margin-top:10px"><button type="button" class="btn ghost" id="startPlayPractice">Игры и квесты →</button></div><div class="hero-trust"><span>Без регистрации</span><span>Аудио на устройстве</span><span>Самооценка без AI-скоринга</span></div>
     </div>
     <aside class="hero-preview" aria-label="Как проходит тренировка"><div class="hero-preview-head"><span>Твоя практика</span><span class="hero-preview-label">Один вопрос</span></div><h2>Как тестировать вывод средств?</h2><ol class="hero-mini-flow"><li><b>01</b> Ответь вслух</li><li><b>02</b> Прослушай себя</li><li><b>03</b> Сравни с эталоном</li><li><b>04</b> Повтори слабое</li></ol><span class="hero-pill" id="bankCount">Загрузка…</span></aside>
   </div>
@@ -57,6 +58,7 @@ body[data-study-mode="voice"] .workspace{max-width:1000px;margin:auto}.voice-fil
   <footer class="footer"><span>Ответы оцениваются вручную по критериям, без фиктивного AI-скоринга.</span><span>Офлайн · Без регистрации · Локальный прогресс</span></footer>
 </main>
 </div>
+<nav class="mobile-study-nav" aria-label="Быстрая навигация"><button type="button" data-mobile-mode="cards"><span aria-hidden="true">⌂</span>Главная</button><button type="button" data-mobile-mode="daily"><span aria-hidden="true">↻</span>Повторить</button><button type="button" data-mobile-mode="play"><span aria-hidden="true">◇</span>Игры</button><button type="button" data-mobile-mode="voice"><span aria-hidden="true">◉</span>Голос</button><button type="button" data-mobile-mode="progress"><span aria-hidden="true">▥</span>Прогресс</button></nav>
 <div class="toast hidden" id="toast" role="status"></div>
 <script>
 'use strict';
@@ -231,6 +233,7 @@ setup();
 <script src="simulator.js"></script>
 <script src="coach.js"></script>
 <script src="voice.js"></script>
+<script src="play.js"></script>
 <script>
 (function(){
   'use strict';
@@ -242,6 +245,7 @@ setup();
     previous();
     const tabs=document.querySelectorAll('.tab');
     tabs.forEach(t=>{if(t.dataset.mode===state.mode)t.setAttribute('aria-current','page');else t.removeAttribute('aria-current')});
+    document.querySelectorAll('[data-mobile-mode]').forEach(t=>{if(t.dataset.mobileMode===state.mode)t.setAttribute('aria-current','page');else t.removeAttribute('aria-current')});
     const badge=document.getElementById('bankCount');
     if(badge&&window.QAVoiceInfo)badge.textContent=window.QAVoiceInfo.count+' устных вопросов · '+allQuiz.length+' теста';
   };
@@ -254,6 +258,8 @@ setup();
     workspace.focus({preventScroll:true});
     workspace.scrollIntoView({block:'start',behavior:'instant'});
   }
+  document.querySelectorAll('[data-mobile-mode]').forEach(t=>t.onclick=()=>openMode(t.dataset.mobileMode));
+  document.getElementById('startPlayPractice').onclick=()=>openMode('play');
   document.getElementById('startVoicePractice').onclick=()=>openMode('voice');
   document.getElementById('startDailyPractice').onclick=()=>{const start=document.getElementById('beginDaily');if(start){start.click();workspace.focus({preventScroll:true});workspace.scrollIntoView({block:'start',behavior:'instant'})}else openMode('daily')};
   render();
