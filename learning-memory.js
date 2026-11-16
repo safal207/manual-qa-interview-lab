@@ -15,6 +15,6 @@ function positive(e){return e.source==='voice'?e.value===2:e.source==='arena'?e.
 function project(raw){const buckets=new Map();for(const e of clean(raw)){const k=e.source+':'+e.item;const list=buckets.get(k)||[];list.push(e);buckets.set(k,list)}return [...buckets].map(([key,events])=>{let failureRun=0,successRun=0,failures=0,recoveries=0,delayed=0;let prior=null,lastFailure=null;for(const e of events){if(positive(e)){successRun++;failureRun=0;if(prior&&!positive(prior))recoveries++;if(lastFailure&&e.at-lastFailure.at>=DAY){delayed++;lastFailure=null}}else{failureRun++;successRun=0;failures++;lastFailure=e}prior=e}
  const last=events.at(-1);return {key,source:last.source,item:last.item,lane:lane[last.source],attempts:events.length,failures,failureRun,successRun,recoveries,delayed,lastAt:last.at,lastValue:last.value,lastPositive:positive(last),pattern:failureRun>=2?'REPEATED_DIFFICULTY':failureRun===1?'RECENT_DIFFICULTY':recoveries&&successRun?'RECOVERED':successRun>=2?'REPEATED_SUCCESS':'OBSERVED'} }).sort((a,b)=>b.lastAt-a.lastAt||a.key.localeCompare(b.key))}
 function boost(row){if(!row)return 0;return row.failureRun>=2?25:0}
-function status(){return {events:load().events.length,warning}}
+function status(){const s=load();return {events:s.events.length,lastSequence:s.next-1,warning}}
 window.QALearningMemory=Object.freeze({append,erase,read:()=>load().events,project,boost,status,clean});
 })();
