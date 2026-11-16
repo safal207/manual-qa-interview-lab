@@ -1,5 +1,5 @@
 /* Bump the cache version whenever any precached app asset changes. */
-const CACHE='manual-qa-lab-voice-v1';
+const CACHE='manual-qa-lab-voice-v2';
 const ASSETS=['./','./index.html','./learning.css','./simulator.css','./coach.css','./learning.js','./simulator.js','./coach.js','./voice.js','./manifest.webmanifest','./voice-icon.svg'];
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS))));
 self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('manual-qa-lab-voice-')&&k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
