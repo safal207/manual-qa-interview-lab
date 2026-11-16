@@ -11,7 +11,7 @@ try{
   await page.goto(origin+'/',{waitUntil:'networkidle'});
   await page.locator('#startVoicePractice').click();
   await page.locator('.voice-recorder').waitFor();
-  assert.match(await page.locator('#workspace').innerText(),/Банк: 87/);
+  assert.match(await page.locator('#workspace').innerText(),/Банк: 102/);
   assert.equal(await page.locator('#voiceModel').isVisible(),true);
   assert.match(await page.locator('#voiceGuideTitle').innerText(),/Прочитай и запиши/);
   await page.locator('#voiceTraining').selectOption('interview');
@@ -145,4 +145,15 @@ try{
   assert.equal(await page.locator('.voice-grade').isVisible(),true);
   assert.deepEqual(errors,[]);
   console.log('PASS: guided speech-first workflow, review gate, resume and optional confidence self-report');
+  await page.locator('#voiceSection').selectOption('Продажи и переговоры · SELF LAB');
+  await page.locator('.action-method summary').click();
+  assert.match(await page.locator('.action-method summary').innerText(),/Грант Кардон/);
+  await page.locator('#voiceActionPlan').fill('Если клиент сомневается, уточню задачу.');
+  await page.reload({waitUntil:'domcontentloaded'});
+  await page.locator('#startVoicePractice').click();
+  await page.locator('#voiceSection').selectOption('Продажи и переговоры · SELF LAB');
+  await page.locator('.action-method summary').click();
+  assert.equal(await page.locator('#voiceActionPlan').inputValue(),'Если клиент сомневается, уточню задачу.');
+  assert.deepEqual(errors,[]);
+  console.log('PASS: action lab filter, source label and offline if-then plan persistence');
 }finally{await browser.close()}
