@@ -156,4 +156,25 @@ try{
   assert.equal(await page.locator('#voiceActionPlan').inputValue(),'Если клиент сомневается, уточню задачу.');
   assert.deepEqual(errors,[]);
   console.log('PASS: action lab filter, source label and offline if-then plan persistence');
+  await page.locator('.tab[data-mode="cards"]').click();
+  await page.locator('#startArenaPractice').click();
+  await page.locator('[data-arena="salary"]').click();
+  await page.locator('#arenaDraft').fill('Уточню бюджет и условия.');
+  await page.locator('[data-arena-choice="2"]').click();
+  assert.match(await page.locator('.arena-feedback').innerText(),/Не заявляй неподтверждённые/);
+  await page.locator('#arenaNext').click();
+  assert.match(await page.locator('.arena-bubble').innerText(),/реальные преимущества/);
+  await page.reload({waitUntil:'domcontentloaded'});
+  await page.locator('#startArenaPractice').click();
+  await page.locator('#arenaResume').click();
+  assert.match(await page.locator('.arena-meter').innerText(),/2 \/ 3/);
+  await page.locator('[data-arena-choice="0"]').click();
+  await page.locator('#arenaNext').click();
+  await page.locator('[data-arena-choice="0"]').click();
+  await page.locator('#arenaNext').click();
+  assert.equal(await page.locator('.arena-scores strong').allTextContents().then(x=>x.join(',')),'3,3,2');
+  assert.match(await page.locator('.arena-debrief').innerText(),/Уточню бюджет и условия/);
+  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true);
+  assert.deepEqual(errors,[]);
+  console.log('PASS: offline arena branching, session resume, draft, debrief and scores');
 }finally{await browser.close()}
