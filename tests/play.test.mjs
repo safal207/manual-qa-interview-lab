@@ -1,0 +1,9 @@
+import {readFileSync} from 'node:fs';
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import vm from 'node:vm';
+const read=p=>readFileSync(new URL('../'+p,import.meta.url),'utf8');
+function boot(){const tab={dataset:{}};const ctx={document:{createElement:()=>tab,querySelector:()=>({appendChild(){}})},window:{},localStorage:{getItem:()=>null,setItem(){}},render(){},state:{mode:'cards'}};vm.createContext(ctx);vm.runInContext(read('play.js'),ctx);return ctx.window.QAPlay}
+test('game bank contains 22 distinct valid exercises',()=>{const {bank}=boot();assert.equal(bank.length,22);assert.equal(new Set(bank.map(x=>x.id)).size,22);for(const t of bank){assert.ok(t.q&&t.why&&t.recall);if(t.kind==='choice'){assert.equal(t.options.length,3);assert.ok(Number.isInteger(t.correct)&&t.correct>=0&&t.correct<3)}else if(t.kind==='sequence')assert.ok(new Set(t.steps).size===t.steps.length);else assert.equal(new Set(t.pairs.map(x=>x[1])).size,t.pairs.length)}});
+test('quest mixes five distinct topics and repeat intervals depend on performance',()=>{const a=boot(),ids=a.quest(1000);assert.equal(ids.length,5);assert.equal(new Set(ids.map(id=>a.bank.find(t=>t.id===id).topic)).size,5);let r=a.nextRecord(null,false,1000);assert.equal(r.due,1201000);r=a.nextRecord(r,true,1000);assert.equal(r.due,86401000);assert.equal(r.attempts,2);assert.equal(r.correct,1);assert.equal(a.nextRecord(r,true,1000).due,259201000)});
+test('mobile navigation and offline assets wired without third party URLs',()=>{const html=read('index.html'),sw=read('voice-sw.js');assert.match(html,/src="play\.js"/);assert.match(html,/href="play\.css"/);assert.equal((html.match(/data-mobile-mode="/g)||[]).length,5);assert.ok(sw.includes("'./play.js'")&&sw.includes("'./play.css'"));assert.match(sw,/voice-v4/);new vm.Script(read('play.js'))});
