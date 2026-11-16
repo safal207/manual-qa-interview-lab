@@ -1,0 +1,49 @@
+/* Local skill graph: evidence lanes stay distinct; no model or network. */
+(function(){
+'use strict';
+const SKILLS=[{"id":"qa","title":"Основы QA","requires":[],"topics":["Теория QA","QA","Процессы"],"voice":"тестирован|severity|priority|дефект|регресс"},{"id":"design","title":"Тест-дизайн","requires":["qa"],"topics":["Тест-дизайн"],"voice":"гранич|эквивалент|pairwise|тест-дизайн"},{"id":"api","title":"API и архитектура","requires":["qa"],"topics":["API","Интеграции","Mobile"],"voice":"\\bapi\\b|http|websocket|tcp|rest|браузер"},{"id":"sql","title":"SQL и данные","requires":["qa"],"topics":["SQL"],"voice":"sql|join|where|acid|баз[аы] данных"},{"id":"security","title":"Безопасность","requires":["api"],"topics":["Безопасность"],"voice":"oauth|авторизац|аутентификац|401|403"},{"id":"fintech","title":"Финтех и расследования","requires":["api","sql"],"topics":["Финтех"],"voice":"плат[её]ж|вывод средств|комисси|идемпотент|баланс|деньги","arena":["release"]},{"id":"performance","title":"Производительность","requires":["api"],"topics":["Performance"],"voice":"нагруз|производительност|перцентил|latency"},{"id":"speech","title":"Речь и самопрезентация","requires":[],"topics":[],"voice":"представься|о себе|ценность QA|структур[ае] STAR|заверши интервью","arena":["unknown"]},{"id":"negotiation","title":"Переговоры и продажи","requires":["speech"],"topics":[],"voice":"клиент|возражен|собеседник|напомнить о себе|предложени","arena":["salary","cafe"]},{"id":"english","title":"QA English","requires":[],"topics":["QA English"],"voice":null}];
+const DAY=86400000;
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const byId=id=>document.getElementById(id);
+function read(key){try{const raw=JSON.parse(localStorage.getItem(key)||'null');return raw&&typeof raw==='object'?raw:{}}catch{return {}}}
+function catalog(modules){const out=[];for(const [source,items] of [['play',modules.play||[]],['visual',modules.visual||[]],['voice',modules.voice||[]],['arena',modules.arena||[]]])for(const c of items){const ids=SKILLS.filter(s=>source==='arena'?s.arena?.includes(c.id):source==='voice'?s.id==='english'?c.lang==='en':c.lang!=='en'&&(s.id==='speech'&&c.section==='Речь и самопрезентация'||s.id==='negotiation'&&c.section==='Продажи и переговоры · SELF LAB'||(c.section!=='Речь и самопрезентация'&&c.section!=='Продажи и переговоры · SELF LAB'&&s.voice&&new RegExp(s.voice,'i').test(c.q))):s.topics.includes(c.topic)).map(s=>s.id);if(ids.length)out.push({id:c.id,source,skills:ids,title:c.title||c.q,role:c.role||null})}return out}
+function evidence(item,stores,now){
+ if(item.source==='arena'){const h=(Array.isArray(stores.arena?.history)?stores.arena.history:[]).filter(x=>x&&x.id===item.id&&Array.isArray(x.scores)&&x.scores.length===3&&x.scores.every(Number.isFinite));const last=h[0];return {lane:'scenario',attempted:!!last,weak:!!last&&last.scores.some(n=>n<=1),due:!!last&&Number.isFinite(last.at)&&now-last.at>=7*DAY,scores:last?.scores||null}}
+ const r=item.source==='play'?stores.play?.records?.[item.id]:stores[item.source]?.[item.id];
+ if(item.source==='voice'){const attempted=!!r&&[0,1,2].includes(r.grade);return {lane:'self',attempted,weak:attempted&&r.grade<2,due:attempted&&Number.isFinite(r.due)&&r.due<=now,grade:attempted?r.grade:null}}
+ const attempted=!!r&&typeof r.last==='boolean'&&Number.isFinite(r.attempts)&&r.attempts>0;
+ return {lane:'objective',attempted,weak:attempted&&!r.last,due:attempted&&Number.isFinite(r.due)&&r.due<=now,last:attempted?r.last:null}
+}
+function snapshot(items,stores,now=Date.now()){return SKILLS.map(s=>{const entries=items.filter(i=>i.skills.includes(s.id)).map(i=>({...i,...evidence(i,stores,now)}));return {...s,entries,objective:entries.filter(x=>x.lane==='objective'),self:entries.filter(x=>x.lane==='self'),scenario:entries.filter(x=>x.lane==='scenario')}})}
+function needsFoundation(row){return row.objective.length>0?!row.objective.some(x=>x.attempted&&x.last===true):row.self.length>0?!row.self.some(x=>x.attempted&&x.grade===2):row.scenario.length>0&&!row.scenario.some(x=>x.attempted&&!x.weak)}
+function plan(rows,goal='all'){
+ const map=new Map(rows.map(r=>[r.id,r])),selected=goal==='all'?rows:rows.filter(r=>r.id===goal);
+ const requested=new Set(selected.map(r=>r.id)),foundations=new Set();
+ function visit(id){for(const dep of map.get(id)?.requires||[]){if(foundations.has(dep))continue;const row=map.get(dep);if(row&&needsFoundation(row)){foundations.add(dep);visit(dep)}}}
+ if(goal!=='all')for(const s of selected)visit(s.id);
+ const eligible=goal==='all'?rows:rows.filter(r=>foundations.has(r.id)||requested.has(r.id));
+ const choices=[];
+ for(const r of eligible)for(const x of r.entries){
+  if(x.attempted&&!x.due)continue; // preserve spacing; free practice remains available in each module
+  let priority=x.attempted&&x.weak?90:x.attempted?70:40;
+  let reason=x.attempted&&x.weak?'WEAK_DUE':x.attempted?'REVIEW_DUE':'NEW_PRACTICE';
+  if(x.lane==='objective')priority+=8;
+  if(foundations.has(r.id)){priority+=100;reason='FOUNDATION_'+reason}
+  if(goal!=='all'&&requested.has(r.id))priority+=5;
+  choices.push({...x,skill:r.id,skillTitle:r.title,priority,reason})
+ }
+ const used=new Set();return choices.sort((a,b)=>b.priority-a.priority||a.skill.localeCompare(b.skill)||a.source.localeCompare(b.source)||a.id.localeCompare(b.id)).filter(x=>{const k=x.source+':'+x.id;if(used.has(k))return false;used.add(k);return true}).slice(0,3)
+}
+const modules=()=>({play:window.QAPlay?.bank,visual:window.QAVisual?.cards,voice:window.QAVoiceInfo?.cards,arena:window.QAArena?.scenarios});
+const stores=()=>({play:read('qa-play-v1'),visual:read('qa-visual-v1'),voice:read('qaVoicePracticeV1'),arena:read('qa-negotiation-v1')});
+const labels={play:'Игра',visual:'Схема',voice:'Голос (самооценка)',arena:'Диалог (рубрика)'};
+const reasons={WEAK_DUE:'Ошибка — пора закрепить',REVIEW_DUE:'Наступил срок повторения',NEW_PRACTICE:'Новая практика',FOUNDATION_WEAK_DUE:'Основа навыка: повторить ошибку',FOUNDATION_REVIEW_DUE:'Основа навыка: повторение',FOUNDATION_NEW_PRACTICE:'Основа навыка: сначала изучить'};
+let goal='all';
+function draw(){const w=byId('workspace');byId('controls').classList.add('hidden');const rows=snapshot(catalog(modules()),stores()),suggestions=plan(rows,goal);
+ w.innerHTML='<section class="skill-panel"><div class="skill-kicker">LIMINAL INTELLIGENCE · LOCAL COACH</div><h2>Что прокачать дальше?</h2><p>Наставник использует граф навыков, историю результатов и сроки повторения. Без нейросети. Это прозрачные учебные рекомендации.</p><label for="skillGoal">Цель тренировки</label><select id="skillGoal"><option value="all">Все навыки</option>'+rows.map(r=>'<option value="'+esc(r.id)+'" '+(goal===r.id?'selected':'')+'>'+esc(r.title)+'</option>').join('')+'</select><h3>Следующие шаги</h3><div class="skill-recs">'+(suggestions.length?suggestions.map((x,i)=>'<div><small>'+esc(labels[x.source])+' · '+esc(x.skillTitle)+'</small><strong>'+esc(x.title)+'</strong><p>'+esc(reasons[x.reason])+'</p><button class="btn primary" data-skill-rec="'+i+'">Начать →</button><details><summary>Почему?</summary><p>'+esc(x.reason)+' · '+esc(x.source+':'+x.id)+' · приоритет '+x.priority+'</p></details></div>').join(''):'<p>Нет доступных повторений по выбранной цели. Вернись позже или выбери свободную тренировку.</p>')+'</div><h3>Граф навыков</h3><div class="skill-map">'+rows.map(r=>'<section><strong>'+esc(r.title)+'</strong><p class="subtle">'+(r.requires.length?'Основа: '+esc(r.requires.map(id=>rows.find(x=>x.id===id)?.title||id).join(' + ')):'Базовый узел')+'</p><div class="skill-lanes"><span>Проверяемые задания <b>'+r.objective.filter(x=>x.last===true).length+'/'+r.objective.length+'</b></span><span>Устная самооценка <b>'+r.self.filter(x=>x.grade===2).length+'/'+r.self.length+'</b></span><span>Диалоги пройдены <b>'+r.scenario.filter(x=>x.attempted).length+'/'+r.scenario.length+'</b></span></div></section>').join('')+'</div><p class="subtle">Показатели не объединяются в оценку личности. Связи и приоритеты — авторские правила, не измеренное причинное влияние. Одно упражнение может относиться к нескольким навыкам.</p></section>';
+ byId('skillGoal').value=goal;byId('skillGoal').onchange=e=>{goal=e.target.value;draw()};w.querySelectorAll('[data-skill-rec]').forEach(b=>b.onclick=()=>{const x=suggestions[+b.dataset.skillRec];const api={play:window.QAPlay,visual:window.QAVisual,voice:window.QAVoiceInfo,arena:window.QAArena}[x?.source];if(x&&api?.open)api.open(x.id)})
+}
+const prior=render;render=function(){prior();if(state.mode==='skills')draw()};
+const tab=document.createElement('button');tab.type='button';tab.className='tab';tab.dataset.mode='skills';tab.textContent='Умный наставник';document.querySelector('.tabs').appendChild(tab);tab.onclick=()=>{state.mode='skills';render()};
+window.QASkillGraph={skills:SKILLS,catalog,evidence,snapshot,plan,needsFoundation};
+})();

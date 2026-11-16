@@ -194,4 +194,20 @@ try{
   assert.equal(await page.locator('.arena-debrief section').count(),4);
   assert.deepEqual(errors,[]);
   console.log('PASS: adaptive graph repair round, reason trace, reload and terminal state');
+  await page.evaluate(()=>localStorage.setItem('qa-play-v1',JSON.stringify({records:{'http-401':{attempts:1,last:false,due:0}},session:null})));
+  await page.reload({waitUntil:'domcontentloaded'});
+  await page.locator('#startSkillPractice').click();
+  await page.locator('#skillGoal').selectOption('fintech');
+  assert.match(await page.locator('.skill-recs>div').first().innerText(),/истёкшим токеном/);
+  assert.match(await page.locator('.skill-recs>div').first().innerText(),/Основа навыка: повторить ошибку/);
+  await page.locator('[data-skill-rec="0"]').click();
+  assert.match(await page.locator('.play-panel h2').innerText(),/истёкшим токеном/);
+  await page.locator('[data-choice="1"]').click();
+  assert.match(await page.locator('.play-feedback').innerText(),/Верно/);
+  await page.locator('.tab[data-mode="skills"]').click();
+  await page.locator('#skillGoal').selectOption('fintech');
+  assert.equal(await page.locator('.skill-recs').innerText().then(x=>x.includes('истёкшим токеном')),false);
+  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true);
+  assert.deepEqual(errors,[]);
+  console.log('PASS: offline skill graph prerequisite recommendation, exact navigation and review update');
 }finally{await browser.close()}
