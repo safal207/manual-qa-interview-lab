@@ -16,6 +16,7 @@
 <link rel="stylesheet" href="speech.css">
 <link rel="stylesheet" href="arena.css">
 <link rel="stylesheet" href="skill-graph.css">
+<link rel="stylesheet" href="learning-route.css">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#0b101b">
 <style>
@@ -50,7 +51,7 @@ body[data-study-mode="voice"] .workspace{max-width:1000px;margin:auto}.voice-fil
   <div class="hero">
     <div><div class="eyebrow">Твой личный тренажёр Manual QA</div><h1>Знаешь ответ?<br><em>Научись его уверенно объяснять.</em></h1><p>Тренируй речь, разбирай реальные кейсы и готовься к техническому интервью — в своём темпе, по одному вопросу.</p>
       <div class="hero-actions"><button type="button" class="btn primary" id="startVoicePractice">Начать голосовую тренировку →</button><button type="button" class="btn ghost" id="startDailyPractice">Мини-урок · 5–7 мин</button></div>
-      <div class="hero-actions" style="margin-top:10px"><button type="button" class="btn ghost" id="startPlayPractice">Игры и квесты →</button><button type="button" class="btn ghost" id="startVisualPractice">Визуальные схемы →</button><button type="button" class="btn ghost" id="startArenaPractice">Диалоги и переговоры →</button><button type="button" class="btn primary" id="startSkillPractice">Умный наставник →</button></div><div class="hero-trust"><span>Без регистрации</span><span>Аудио на устройстве</span><span>Самооценка без AI-скоринга</span></div>
+      <div class="hero-actions" style="margin-top:10px"><button type="button" class="btn ghost" id="startPlayPractice">Игры и квесты →</button><button type="button" class="btn ghost" id="startVisualPractice">Визуальные схемы →</button><button type="button" class="btn ghost" id="startArenaPractice">Диалоги и переговоры →</button><button type="button" class="btn primary" id="startSkillPractice">Умный наставник →</button><button type="button" class="btn primary" id="startRoutePractice">Мой маршрут →</button></div><div class="hero-trust"><span>Без регистрации</span><span>Аудио на устройстве</span><span>Самооценка без AI-скоринга</span></div>
     </div>
     <aside class="hero-preview" aria-label="Как проходит тренировка"><div class="hero-preview-head"><span>Твоя практика</span><span class="hero-preview-label">Один вопрос</span></div><h2>Как тестировать вывод средств?</h2><ol class="hero-mini-flow"><li><b>01</b> Ответь вслух</li><li><b>02</b> Прослушай себя</li><li><b>03</b> Сравни с эталоном</li><li><b>04</b> Повтори слабое</li></ol><span class="hero-pill" id="bankCount">Загрузка…</span></aside>
   </div>
@@ -242,6 +243,7 @@ setup();
 <script src="arena.js"></script>
 <script src="learning-memory.js"></script>
 <script src="skill-graph.js"></script>
+<script src="learning-route.js"></script>
 <script>
 (function(){
   'use strict';
@@ -267,6 +269,7 @@ setup();
     workspace.scrollIntoView({block:'start',behavior:'instant'});
   }
   document.querySelectorAll('[data-mobile-mode]').forEach(t=>t.onclick=()=>openMode(t.dataset.mobileMode));
+  document.getElementById('startRoutePractice').onclick=()=>openMode('route');
   document.getElementById('startSkillPractice').onclick=()=>openMode('skills');
   document.getElementById('startArenaPractice').onclick=()=>openMode('arena');
   document.getElementById('startVisualPractice').onclick=()=>openMode('visual');
