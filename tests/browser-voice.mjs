@@ -1,0 +1,71 @@
+import assert from 'node:assert/strict';
+import {chromium} from 'playwright';
+
+const browser=await chromium.launch({headless:true,args:['--use-fake-ui-for-media-stream','--use-fake-device-for-media-stream','--autoplay-policy=no-user-gesture-required']});
+const origin='http://127.0.0.1:8000';
+const context=await browser.newContext({permissions:['microphone']});
+const page=await context.newPage(),errors=[];
+page.on('pageerror',e=>errors.push(e.message));
+const wait=async(fn)=>page.waitForFunction(fn,undefined,{timeout:15000});
+try{
+  await page.goto(origin+'/',{waitUntil:'networkidle'});
+  await page.locator('#startVoicePractice').click();
+  await page.locator('.voice-recorder').waitFor();
+  assert.match(await page.locator('#workspace').innerText(),/Банк: 81/);
+  await page.locator('#voiceReveal').click();
+  assert.equal(await page.locator('#voiceModel').isVisible(),true);
+  // Test the local-voice selection and UI contract, not actual speaker output.
+  await page.evaluate(()=>{
+    window.__spoken=null;
+    Object.defineProperty(window,'speechSynthesis',{configurable:true,value:{
+      getVoices:()=>[{localService:false,lang:'ru-RU'},{localService:true,lang:'ru-RU'}],
+      speak:u=>{window.__spoken={lang:u.lang,rate:u.rate,text:u.text,local:u.voice.localService};u.onend?.()},
+      cancel(){}
+    }});
+    window.SpeechSynthesisUtterance=class {constructor(text){this.text=text}};
+  });
+  await page.locator('#voiceSpeechRate').selectOption('0.75');
+  await page.locator('#voiceSpeak').click();
+  const spoken=await page.evaluate(()=>window.__spoken);
+  assert.equal(spoken.local,true);assert.equal(spoken.rate,.75);assert.match(spoken.lang,/^ru/);
+  async function record(count){
+    await page.locator('#voiceStart').click();
+    await wait(()=>document.querySelector('.voice-recorder')?.dataset.phase==='recording');
+    await page.waitForTimeout(1100);
+    await page.locator('#voiceStop').click();
+    await wait(()=>document.querySelector('.voice-recorder')?.dataset.phase==='idle'&&document.querySelector('#voiceAttemptCount')?.textContent.includes('Попыток: '+window.__expected+' из'));
+    assert.equal(await page.locator('#voiceAttempts option').count(),count);
+  }
+  await page.evaluate(()=>window.__expected=1);await record(1);
+  await page.evaluate(()=>window.__expected=2);await record(2);
+  await page.locator('#voicePlaybackRate').selectOption('1.5');
+  assert.equal(await page.locator('#voiceAudio').evaluate(a=>a.playbackRate),1.5);
+  await page.locator('#voiceAttempts').selectOption({index:1});
+  await page.locator('#voiceAudio').evaluate(a=>a.play());
+  await wait(()=>document.querySelector('#voiceAudio').currentTime>0);
+  await page.locator('#voiceAudio').evaluate(a=>a.pause());
+  await page.locator('#voiceDelete').click();
+  await wait(()=>document.querySelector('#voiceAttempts')?.options.length===1);
+  await page.reload({waitUntil:'networkidle'});
+  await page.locator('#startVoicePractice').click();
+  await wait(()=>document.querySelector('#voiceAttempts')?.options.length===1);
+  await page.locator('#voiceLanguage').selectOption('en');
+  assert.match(await page.locator('.voice-session .learning-prompt').innerText(),/[A-Za-z]/);
+  await page.locator('[data-grade="2"]').click();
+  assert.match(await page.locator('#workspace').innerText(),/Самооценено: 1/);
+  await page.locator('.tab[data-mode="cards"]').click();
+  await page.locator('#startVoicePractice').waitFor({state:'visible'});
+  await page.evaluate(async()=>{await navigator.serviceWorker.ready});
+  await wait(()=>!!navigator.serviceWorker.controller);
+  await context.setOffline(true);
+  await page.reload({waitUntil:'domcontentloaded'});
+  await page.locator('#startVoicePractice').click();
+  await page.locator('.voice-recorder').waitFor();
+  await wait(()=>document.querySelector('#voiceAttempts')?.options.length===1);
+  assert.deepEqual(errors,[]);
+  console.log('PASS: Chromium fake-microphone recording, history, playback, delete, reload, language, local TTS contract, offline shell');
+  // Layout verification at mobile viewport (still desktop Chromium).
+  await page.setViewportSize({width:390,height:844});
+  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true);
+  console.log('PASS: mobile-width overflow check');
+}finally{await browser.close()}
