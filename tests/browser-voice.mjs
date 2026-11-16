@@ -98,4 +98,20 @@ try{
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true);
   assert.deepEqual(errors,[]);
   console.log('PASS: offline mobile games, match, sequence, choice and session restore');
+  await page.locator('.tab[data-mode="cards"]').click();
+  await page.locator('#startVisualPractice').click();
+  await page.locator('[data-visual="sql"]').click();
+  assert.equal(await page.locator('.vis-figure').isVisible(),true);
+  await page.locator('#visualRecall').click();
+  assert.equal(await page.locator('.vis-figure').count(),0);
+  await page.locator('[data-visual-answer="0"]').click();
+  assert.match(await page.locator('.visual-feedback').innerText(),/Верно/);
+  assert.equal(await page.locator('.vis-figure').isVisible(),true);
+  await page.reload({waitUntil:'domcontentloaded'});
+  await page.locator('#startVisualPractice').click();
+  assert.match(await page.locator('[data-visual="sql"]').innerText(),/Последний ответ: верно/);
+  await page.locator('[data-visual="boundary"]').click();
+  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true);
+  assert.deepEqual(errors,[]);
+  console.log('PASS: offline visual lesson, hidden-diagram recall, feedback, saved result and mobile layout');
 }finally{await browser.close()}
