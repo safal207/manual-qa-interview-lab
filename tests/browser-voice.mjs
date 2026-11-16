@@ -68,4 +68,30 @@ try{
   await page.setViewportSize({width:390,height:844});
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true);
   console.log('PASS: mobile-width overflow check');
+  await page.locator('[data-mobile-mode="play"]').click();
+  await page.locator('#playQuest').waitFor();
+  await page.locator('[data-game="Memory Match"]').click();
+  const terms=await page.locator('[data-term]').count();
+  for(let i=0;i<terms;i++){await page.locator('[data-term="'+i+'"]').click();await page.locator('[data-definition="'+i+'"]').click()}
+  await page.locator('#checkMatch').click();
+  assert.match(await page.locator('.play-feedback').innerText(),/Верно/);
+  await page.locator('#playHome').click();
+  await page.reload({waitUntil:'domcontentloaded'});
+  await page.locator('[data-mobile-mode="play"]').click();
+  await page.locator('#playResume').click();
+  assert.match(await page.locator('.play-feedback').innerText(),/Верно/);
+  await page.locator('#playNext').click();
+  await page.locator('#playHome').click();
+  // Test Case Builder includes both choices and sequences; exercise all tasks.
+  await page.locator('[data-game="Test Case Builder"]').click();
+  for(let n=0;n<3;n++){
+    if(await page.locator('[data-step]').count()){const steps=await page.locator('[data-step]').count();for(let i=0;i<steps;i++)await page.locator('[data-step="'+i+'"]').click();await page.locator('#checkSequence').click()}
+    else await page.locator('[data-choice="0"]').click();
+    assert.match(await page.locator('.play-feedback').innerText(),/Верно/);
+    await page.locator('#playNext').click();
+  }
+  assert.match(await page.locator('.play-panel').innerText(),/3 из 3 верно/);
+  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true);
+  assert.deepEqual(errors,[]);
+  console.log('PASS: offline mobile games, match, sequence, choice and session restore');
 }finally{await browser.close()}
