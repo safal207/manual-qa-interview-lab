@@ -210,4 +210,18 @@ try{
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true);
   assert.deepEqual(errors,[]);
   console.log('PASS: offline skill graph prerequisite recommendation, exact navigation and review update');
+  const recorded=await page.evaluate(()=>window.QALearningMemory.read());
+  assert.ok(recorded.some(e=>e.source==='play'&&e.item==='http-401'&&e.value===true));
+  for(const source of ['play','visual','voice','arena'])assert.ok(recorded.some(e=>e.source===source),source+' result missing');
+  await page.reload({waitUntil:'domcontentloaded'});
+  await page.locator('#startSkillPractice').click();
+  assert.equal(await page.locator('#memoryCount').innerText(),'Событий: '+recorded.length);
+  assert.ok(await page.locator('.memory-map section').count()>0);
+  await page.locator('#memoryErase').scrollIntoViewIfNeeded();
+  page.once('dialog',d=>d.accept());
+  await page.locator('#memoryErase').click();
+  assert.match(await page.locator('#memoryCount').innerText(),/Событий: 0/);
+  assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('qa-play-v1')).records['http-401'].last),true);
+  assert.deepEqual(errors,[]);
+  console.log('PASS: local event capture across four modules, offline replay and independent journal deletion');
 }finally{await browser.close()}
