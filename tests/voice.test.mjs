@@ -34,3 +34,9 @@ test('English bank, local speech and recording history contracts',()=>{
 test('legacy recordings remain playable and malformed attempt values are ignored',()=>{
  const voice=read('voice.js');const source=voice.slice(voice.indexOf('function normalizeAttempts('),voice.indexOf('async function storage('));const ctx={Blob};vm.createContext(ctx);vm.runInContext(source,ctx);const b=new Blob(['test']);const old=ctx.normalizeAttempts(b);assert.equal(old.length,1);assert.equal(old[0].blob,b);assert.equal(old[0].id,'legacy');assert.equal(ctx.normalizeAttempts([{id:'ok',blob:b},{id:'bad',blob:'bad'},null]).length,1);assert.equal(ctx.normalizeAttempts(undefined).length,0);
 });
+
+test('guided speech begins with an example and separates knowledge from listening',()=>{
+ const voice=read('voice.js'),html=read('index.html'),sw=read('voice-sw.js');
+ const match=voice.match(/const speechMore=(\[.*?\])\.map\(/s);assert.ok(match);const rows=JSON.parse(match[1]);assert.equal(rows.length,6);assert.equal(new Set(rows.map(x=>x[1])).size,6);
+ assert.match(voice,/training='guided'/);assert.match(voice,/guideStage!==4/);assert.match(voice,/qaSpeechGuideV1/);assert.match(voice,/confidence0/);assert.match(voice,/voiceSystemVoice/);assert.match(voice,/practice,blob:b/);assert.match(html,/href="speech\.css"/);assert.ok(sw.includes("'./speech.css'"));new vm.Script(voice);
+});
