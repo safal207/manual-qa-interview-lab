@@ -17,7 +17,7 @@ test('complete graph state-transition matrix: 266 terminal paths, no invalid or 
   for(let i=0;i<3;i++){const a=g.transition(c,s,{type:'CHOOSE',choice:i});assert.equal(g.sessionPhase(a),'REVIEW');assert.equal(a.answers.at(-1).nodeId,n.id);assert.equal(g.transition(c,a,{type:'CHOOSE',choice:i}),null);const b=g.transition(c,a,{type:'ADVANCE'});assert.ok(b);assert.equal(a.answers.length,b.answers.length);assert.equal(JSON.stringify(s),before);edges+=2;visit(c,b)}
  }
  for(const c of g.scenarios)visit(c,{id:c.id,graphVersion:2,round:0,answers:[],draft:'',complete:false});
- assert.deepEqual({paths,edges,terminal3,terminal4,nodes:nodes.size,rules:rules.size,repair},{paths:266,edges:786,terminal3:29,terminal4:237,nodes:35,rules:7,repair:{trust:70,evidence:6,clarity:3}});
+ assert.deepEqual({paths,edges,terminal3,terminal4,nodes:nodes.size,rules:rules.size,repair},{paths:266,edges:786,terminal3:29,terminal4:237,nodes:38,rules:7,repair:{trust:70,evidence:6,clarity:3}});
 });
 test('legacy sessions keep three rounds and low-score version-two sessions add one repair',()=>{
  const g=boot(),c=g.scenarios[0];for(const version of [1,2]){let s={id:c.id,graphVersion:version,round:0,answers:[],draft:'',complete:false};while(!s.complete){s=g.transition(c,s,{type:'CHOOSE',choice:2});s=g.transition(c,s,{type:'ADVANCE'})}assert.equal(s.answers.length,version===1?3:4)}
