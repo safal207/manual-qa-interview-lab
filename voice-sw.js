@@ -1,6 +1,6 @@
 /* Bump the cache version whenever any precached app asset changes. */
-const CACHE='manual-qa-lab-voice-v10';
-const ASSETS=['./','./index.html','./learning.css','./simulator.css','./coach.css','./learning.js','./simulator.js','./coach.js','./voice.js','./play.js','./play.css','./visual.js','./visual.css','./speech.css','./arena.js','./arena.css','./skill-graph.js','./skill-graph.css','./learning-memory.js','./manifest.webmanifest','./voice-icon.svg'];
+const CACHE='manual-qa-lab-voice-v11';
+const ASSETS=['./','./index.html','./learning.css','./simulator.css','./coach.css','./learning.js','./simulator.js','./coach.js','./voice.js','./play.js','./play.css','./visual.js','./visual.css','./speech.css','./arena.js','./arena.css','./skill-graph.js','./skill-graph.css','./learning-memory.js','./learning-route.js','./learning-route.css','./manifest.webmanifest','./voice-icon.svg'];
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS))));
 self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('manual-qa-lab-voice-')&&k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
 self.addEventListener('fetch',event=>{
