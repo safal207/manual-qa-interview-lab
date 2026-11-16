@@ -23,8 +23,10 @@ test('the app has a valid document shell', () => {
 });
 
 test('embedded JavaScript parses', () => {
-  assert.equal(inlineScripts.length, 1);
-  assert.doesNotThrow(() => new Script(inlineScripts[0], { filename: 'index.html:inline.js' }));
+  assert.equal(inlineScripts.length, 2, 'core and product-experience bootstraps');
+  inlineScripts.forEach((source, index) => {
+    assert.doesNotThrow(() => new Script(source, { filename: `index.html:inline-${index+1}.js` }));
+  });
 });
 
 test('the training bank contains 12 sections, 48 cases and 24 quiz questions', () => {
