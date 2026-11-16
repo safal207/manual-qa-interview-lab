@@ -11,7 +11,10 @@ try{
   await page.goto(origin+'/',{waitUntil:'networkidle'});
   await page.locator('#startVoicePractice').click();
   await page.locator('.voice-recorder').waitFor();
-  assert.match(await page.locator('#workspace').innerText(),/Банк: 81/);
+  assert.match(await page.locator('#workspace').innerText(),/Банк: 87/);
+  assert.equal(await page.locator('#voiceModel').isVisible(),true);
+  assert.match(await page.locator('#voiceGuideTitle').innerText(),/Прочитай и запиши/);
+  await page.locator('#voiceTraining').selectOption('interview');
   await page.locator('#voiceReveal').click();
   assert.equal(await page.locator('#voiceModel').isVisible(),true);
   // Test the local-voice selection and UI contract, not actual speaker output.
@@ -49,6 +52,7 @@ try{
   await page.reload({waitUntil:'networkidle'});
   await page.locator('#startVoicePractice').click();
   await wait(()=>document.querySelector('#voiceAttempts')?.options.length===1);
+  await page.locator('#voiceTraining').selectOption('interview');
   await page.locator('#voiceLanguage').selectOption('en');
   assert.match(await page.locator('.voice-session .learning-prompt').innerText(),/[A-Za-z]/);
   await page.locator('[data-grade="2"]').click();
@@ -114,4 +118,31 @@ try{
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true);
   assert.deepEqual(errors,[]);
   console.log('PASS: offline visual lesson, hidden-diagram recall, feedback, saved result and mobile layout');
+  await page.locator('.tab[data-mode="voice"]').click();
+  assert.match(await page.locator('#voiceGuideTitle').innerText(),/Прочитай и запиши/);
+  assert.equal(await page.locator('#voiceModel').isVisible(),true);
+  assert.equal(await page.locator('.voice-grade').isVisible(),false);
+  await page.locator('#voiceConfidence').selectOption('3');
+  await page.locator('#voiceGuideNext').click();
+  assert.match(await page.locator('#voiceGuideTitle').innerText(),/Послушай себя/);
+  assert.equal(await page.locator('#voiceGuideNext').isEnabled(),false);
+  await page.locator('#voiceObservation').fill('Первый дубль: понятное начало');
+  await page.locator('#voiceListened').check();
+  await page.locator('#voiceGuideNext').click();
+  assert.match(await page.locator('#voiceGuideTitle').innerText(),/Улучшенный дубль/);
+  await page.locator('#voiceGuideNext').click();
+  assert.equal(await page.locator('#voiceModel').isVisible(),false);
+  await page.reload({waitUntil:'domcontentloaded'});
+  await page.locator('#startVoicePractice').click();
+  assert.match(await page.locator('#voiceGuideTitle').innerText(),/Ответ без текста/);
+  assert.equal(await page.locator('#voiceModel').isVisible(),false);
+  await page.locator('#voiceGuideNext').click();
+  assert.equal(await page.locator('#voiceModel').isVisible(),true);
+  assert.match(await page.locator('#voicePriorNote').innerText(),/понятное начало/);
+  assert.match(await page.locator('#voiceConfidenceCompare').innerText(),/3 из 5/);
+  await page.locator('#voiceConfidence').selectOption('4');
+  await page.locator('#voiceListened').check();
+  assert.equal(await page.locator('.voice-grade').isVisible(),true);
+  assert.deepEqual(errors,[]);
+  console.log('PASS: guided speech-first workflow, review gate, resume and optional confidence self-report');
 }finally{await browser.close()}
