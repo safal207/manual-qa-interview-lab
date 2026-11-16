@@ -224,4 +224,24 @@ try{
   assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('qa-play-v1')).records['http-401'].last),true);
   assert.deepEqual(errors,[]);
   console.log('PASS: local event capture across four modules, offline replay and independent journal deletion');
+  await page.evaluate(()=>localStorage.setItem('qa-play-v1',JSON.stringify({records:{'http-401':{attempts:1,last:false,due:0}},session:null})));
+  await page.reload({waitUntil:'domcontentloaded'});
+  await page.locator('#startRoutePractice').click();
+  await page.locator('#routeGoal').selectOption('fintech');
+  await page.locator('[data-route-budget="5"]').click();
+  await page.locator('#routeStart').click();
+  assert.match(await page.locator('.route-next h3').innerText(),/истёкшим токеном/);
+  await page.locator('#routeRefresh').click();
+  assert.match(await page.locator('.route-status').innerText(),/0 \/ 5/);
+  await page.locator('#routeOpen').click();
+  await page.locator('[data-choice="1"]').click();
+  await page.locator('.tab[data-mode="route"]').click();
+  assert.match(await page.locator('.route-status').innerText(),/2 \/ 5/);
+  assert.match(await page.locator('.route-history').innerText(),/Верный ответ/);
+  await page.reload({waitUntil:'domcontentloaded'});
+  await page.locator('#startRoutePractice').click();
+  assert.match(await page.locator('.route-status').innerText(),/2 \/ 5/);
+  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true);
+  assert.deepEqual(errors,[]);
+  console.log('PASS: budgeted daily route, exact event completion, offline restore and mobile layout');
 }finally{await browser.close()}
