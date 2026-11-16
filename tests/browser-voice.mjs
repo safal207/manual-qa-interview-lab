@@ -83,6 +83,10 @@ try{
   await page.locator('#playNext').click();
   await page.locator('#playHome').click();
   // Test Case Builder includes both choices and sequences; exercise all tasks.
+  page.once('dialog',d=>d.dismiss());
+  await page.locator('[data-game="Test Case Builder"]').click();
+  await page.locator('#playResume').waitFor();
+  page.once('dialog',d=>d.accept());
   await page.locator('[data-game="Test Case Builder"]').click();
   for(let n=0;n<3;n++){
     if(await page.locator('[data-step]').count()){const steps=await page.locator('[data-step]').count();for(let i=0;i<steps;i++)await page.locator('[data-step="'+i+'"]').click();await page.locator('#checkSequence').click()}
