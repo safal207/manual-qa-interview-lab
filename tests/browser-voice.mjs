@@ -233,6 +233,7 @@ try{
   assert.match(await page.locator('.route-next h3').innerText(),/истёкшим токеном/);
   await page.locator('#routeRefresh').click();
   assert.match(await page.locator('.route-status').innerText(),/0 \/ 5/);
+  await page.locator('[data-forecast="75"]').click();
   await page.locator('#routeOpen').click();
   await page.locator('[data-choice="1"]').click();
   await page.locator('.tab[data-mode="route"]').click();
@@ -248,6 +249,8 @@ try{
   assert.equal(strategyRows.length,1);
   assert.equal(strategyRows[0].source,'play');
   assert.equal(strategyRows[0].positive,true);
+  assert.equal(strategyRows[0].forecast,75);
+  assert.match(await page.locator('#routeCalibration').innerText(),/Прогнозов: 1/);
   await page.reload({waitUntil:'domcontentloaded'});
   await page.locator('#startRoutePractice').click();
   assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('qa-route-strategy-v1')||'[]').length),1);
