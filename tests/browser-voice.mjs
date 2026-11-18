@@ -190,7 +190,7 @@ try{
   assert.match(await page.locator('.arena-meter').innerText(),/4 \/ 4/);
   await page.locator('[data-arena-choice="0"]').click();
   await page.locator('#arenaNext').click();
-  assert.match(await page.locator('.arena-debrief').innerText(),/TRUST_LOW/);
+  assert.match(await page.locator('.arena-debrief').innerText(),/TRUST_CRITICAL/);
   assert.equal(await page.locator('.arena-debrief section').count(),4);
   assert.deepEqual(errors,[]);
   console.log('PASS: adaptive graph repair round, reason trace, reload and terminal state');
